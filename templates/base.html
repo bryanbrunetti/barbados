@@ -16,6 +16,13 @@
         </ul>
     {% endif %}
 {% endwith %}
+<div id="navbar">
+    {% if session.get("user") %}
+        <a href="/logout">Logout</a>
+    {% else %}
+        <a href="/login">Login with GitHub</a>
+    {% endif %}
+</div>
 <body>
 {% block body %}{% endblock %}
 </body>

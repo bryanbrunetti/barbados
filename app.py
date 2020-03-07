@@ -11,9 +11,7 @@ db = SQLAlchemy(app)
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(80), unique=False, nullable=False)
-    username = db.Column(db.String(39), unique=True, nullable=False)
-    github_data = db.Column(db.JSON, unique=False, nullable=False)
+    github_id = db.Column(db.Integer, unique=True, nullable=False, index=True)
     access_token = db.Column(db.String(63), unique=True, nullable=False)
 
     def __repr__(self):
@@ -39,6 +37,8 @@ def index():
 
 @app.route('/callback')
 def callback():
+    if session.get("user"):
+        return redirect(url_for("urls"))
     try:
         response = requests.post('https://github.com/login/oauth/access_token',
                                  json={'client_id': os.getenv("CLIENT_ID"),
@@ -48,19 +48,17 @@ def callback():
 
         access_token = response.json()['access_token']
 
-        response = requests.get('https://api.github.com/user',
-                                       params={"access_token": access_token})
+        github_data = requests.get('https://api.github.com/user', params={"access_token": access_token}).json()
 
-        
-        user = User(
-            name=response.json()['name'],
-            username = response.json['username'],
-            access_token=access_token,
-            github_data=response.json()
-        )
+        user = db.session.query(User).filter(User.github_id == github_data['id']).first()
+        if user:
+            session["user"] = user.id
+            return redirect(url_for("urls"))
 
+        user = User(github_id=github_data['id'])
         db.session.add(user)
         db.session.commit()
+
         session["user"] = user.id
         return redirect(url_for("urls"))
     except:
@@ -76,15 +74,17 @@ def login():
     else:
         return redirect(f"https://github.com/login/oauth/authorize?scope=&client_id={os.getenv('CLIENT_ID')}")
 
+
 @app.route("/logout")
 def logout():
     session.clear()
-    return redirect(url_for("/"))
+    return redirect(url_for("index"))
+
 
 @app.route("/urls")
 @login_required
 def urls():
-    render_template("urls.html")
+    return render_template("urls.html")
 
 
 @app.route('/<path:path>')
