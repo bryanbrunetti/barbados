@@ -6,6 +6,10 @@
 
 {% block body %}
     <div class="content">
-        <a href="/login">Login with Github</a>
+        {% if session.get("user") %}
+            <a href="/logout">Logout</a>
+        {% else %}
+            <a href="/login">Login with GitHub</a>
+        {% endif %}
     </div>
 {% endblock %}

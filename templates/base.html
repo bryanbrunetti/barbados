@@ -7,7 +7,16 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
     {% block head %}{% endblock %}
 </head>
+{% with messages = get_flashed_messages() %}
+    {% if messages %}
+        <ul class=notifications>
+            {% for message in messages %}
+                <li>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+{% endwith %}
 <body>
-    {% block body %}{% endblock %}
+{% block body %}{% endblock %}
 </body>
 </html>
