@@ -16,12 +16,6 @@
       "SESSION_SECRET": {
         "description": "A randomly generated secret key for verifying the integrity of signed cookies.",
         "generator": "secret"
-      },
-      "CLIENT_ID": {
-        "description": "The Client ID of your GitHub OAuth app, if you're using GitHub authentication ( https://github.com/settings/applications/ )"
-      },
-      "CLIENT_SECRET": {
-        "description": "The Client Secret of your GitHub OAuth app, if you're using GitHub authentication ( https://github.com/settings/applications/ )"
       }
     },
     "image": "heroku/python",
