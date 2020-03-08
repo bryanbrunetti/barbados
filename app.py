@@ -115,12 +115,8 @@ def users_login():
     if request.method == "GET":
         return render_template("users_login.html")
     else:
-        print(request.form['username'])
-        print(request.form['password'])
         password = sha256_crypt.hash(request.form['password'])
-        print(password)
         user = db.session.query(User).filter(User.username == request.form["username"]).first()
-        print("Verifying: %s", user)
         if user and sha256_crypt.verify(request.form['password'], user.password):
             session["user"] = user.id
             return redirect(url_for("urls"))
