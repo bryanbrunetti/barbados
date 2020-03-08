@@ -1,13 +1,14 @@
-import requests, os, config, sys
-from flask import Flask, render_template, request, redirect, url_for, g, session
+import requests, os, config, sys, validators
+from flask import Flask, render_template, request, redirect, url_for, session
 from flask_sqlalchemy import SQLAlchemy
 from authentication import login_required
 from flask.helpers import flash
+from base_converter import BaseConverter
+
 
 app = Flask(__name__)
 config.load(app)
 db = SQLAlchemy(app)
-
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -63,7 +64,7 @@ def callback():
         return redirect(url_for("urls"))
     except:
         e = sys.exc_info()[0]
-        flash("There was an error logging in: %s", e)
+        flash("There was an error logging in: %s", e, category="danger")
         return redirect(url_for('.index'))
 
 
@@ -81,16 +82,67 @@ def logout():
     return redirect(url_for("index"))
 
 
-@app.route("/urls")
+@app.route("/urls", methods=["GET", "POST"])
 @login_required
 def urls():
-    return render_template("urls.html")
+    if request.method == "POST":
+        valid_url = validators.url(request.form['address'])
+        if valid_url == True:
+            new_url = Url(address=request.form['address'], user_id=session.get("user"))
+            db.session.add(new_url)
+            db.session.commit()
+            flash("New Url added", category="success")
+        else:
+            flash("That URL is not valid", category="danger")
+        return redirect("/urls")
+    else:
+        urls = []
+        for url in Url.query.filter_by(user_id=session.get("user")).all():
+            url.shortcode = request.url_root + BaseConverter().int_to_string(url.id)
+            urls.append(url)
+        return render_template("urls.html", urls=urls)
+
+@app.route("/urls/edit", methods=["POST"])
+@login_required
+def edit_url():
+    id = request.form['url-id']
+    valid_url = validators.url(request.form['address'])
+    if not valid_url:
+        flash("URL is invalid", category="danger")
+        return redirect(url_for("urls"))
+    
+    url = Url.query.filter_by(user_id=session["user"],id=id).first()
+    if url:
+        url.address = request.form['address']
+        db.session.commit()
+        return redirect(url_for("urls"))
+    else:
+        flash("That URL was not found", category="danger")
+    
+    return redirect(url_for("urls"))
+
+@app.route("/urls/delete", methods=["POST"])
+@login_required
+def delete_url():
+    id = request.form['url-id']
+    url = Url.query.filter_by(user_id=session["user"],id=id).first()
+    if url:
+        db.session.delete(url)
+        db.session.commit()
+    return redirect(url_for("urls"))
 
 
 @app.route('/<path:path>')
 def catch_all(path):
-    return path
+    url_id = BaseConverter().string_to_int(path)
+    url = Url.query.get(url_id) if url_id > 0 else None
 
+    if url:
+        url.clicks = Url.clicks + 1
+        db.session.commit()
+        return redirect(url.address, code=302)
+    else:
+        return render_template('404.html'), 404
 
 if __name__ == '__main__':
     app.run(debug=True)

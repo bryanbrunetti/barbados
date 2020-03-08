@@ -1,0 +1,27 @@
+{
+    "name": "Barbados URL Shortener",
+    "description": "This app does one thing, makes short URLs.",
+    "keywords": [
+      "productivity",
+      "python",
+      "flask"
+    ],
+    "website": "https://github.com/bryanbrunetti/barbados",
+    "repository": "https://github.com/bryanbrunetti/barbado",
+    "logo": "",
+    "scripts": {
+      "postdeploy": "db.create_all()"
+    },
+    "env": {
+      "SESSION_SECRET": {
+        "description": "A secret key for verifying the integrity of signed cookies.",
+        "generator": "secret"
+      }
+    },
+    "image": "heroku/python",
+    "addons": [
+      {
+        "plan": "heroku-postgresql"
+      }
+    ]
+  }

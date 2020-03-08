@@ -17,6 +17,11 @@ class BaseConverter:
     def string_to_int(self, string):
         result = 0
         for i, v in enumerate(reversed(string)):
-            digit = self.base.index(v)
+            try:
+                digit = self.base.index(v)
+            except ValueError:
+                return 0
             result += digit * (len(self.base) ** i)
         return result
+
+BaseConverter().string_to_int("ass")
