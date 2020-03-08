@@ -8,9 +8,9 @@
     ],
     "website": "https://github.com/bryanbrunetti/barbados",
     "repository": "https://github.com/bryanbrunetti/barbado",
-    "logo": "",
+    "logo": "https://avatars0.githubusercontent.com/oa/1236397",
     "scripts": {
-      "postdeploy": "db.create_all()"
+      "postdeploy": "python db_setup.py"
     },
     "env": {
       "SESSION_SECRET": {
