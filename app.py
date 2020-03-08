@@ -64,7 +64,7 @@ def callback():
         return redirect(url_for("urls"))
     except:
         e = sys.exc_info()[0]
-        flash("There was an error logging in: %s", e, category="danger")
+        flash("There was an error logging in: %e", e)
         return redirect(url_for('.index'))
 
 
