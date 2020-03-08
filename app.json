@@ -14,15 +14,15 @@
     },
     "env": {
       "SESSION_SECRET": {
-        "description": "A secret key for verifying the integrity of signed cookies.",
+        "description": "A randomly generated secret key for verifying the integrity of signed cookies.",
         "generator": "secret"
       },
       "CLIENT_ID": {
-        "description": "The Client ID of your GitHub OAuth app",
+        "description": "The Client ID of your GitHub OAuth app ( https://github.com/settings/applications/ )",
         "required": true
       },
       "CLIENT_SECRET": {
-        "description": "The Client Secret of your GitHub OAuth appp",
+        "description": "The Client Secret of your GitHub OAuth app ( https://github.com/settings/applications/ )",
         "required": true
       }
     },
