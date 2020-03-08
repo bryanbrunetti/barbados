@@ -31,7 +31,11 @@
         <a href="/urls" class="btn btn-dark">Your URLs</a>
         <a href="/logout" class="btn btn-dark">Logout</a>
         {% else %}
+        {% if github_auth_enabled %}
         <a href="/login" class="btn btn-dark">Login with GitHub</a>
+        {% endif %}
+        <a href="/users/login" class="btn btn-dark">Login with Barbados</a> 
+        <a href="/users/register" class="btn btn-dark">Register with Barbados</a>
         {% endif %}
     </span>
 </div>

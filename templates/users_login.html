@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<title>Barbados URL Shortener - Login</title>
+{% endblock %}
+
+{% block body %}
+<div class="container">
+<form action="/users/login" method="post">
+    <div class="form-group" class="col-sm">
+        <label for="inputUsername">Username</label>
+        <input type="text" class="form-control" id="inputUsername" name="username">
+    </div>
+    <div class="form-group">
+        <label for="inputPassword">Password</label>
+        <input type="password" class="form-control" id="inputPassword" name="password">
+    </div>
+    <button type="submit" class="btn btn-primary">Login</button>
+</form>
+</div>
+{% endblock %}

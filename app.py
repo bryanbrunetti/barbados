@@ -4,19 +4,27 @@ from flask_sqlalchemy import SQLAlchemy
 from authentication import login_required
 from flask.helpers import flash
 from base_converter import BaseConverter
+from passlib.hash import sha256_crypt
 
 
 app = Flask(__name__)
 config.load(app)
 db = SQLAlchemy(app)
 
+@app.context_processor
+def inject_github_auth():
+    github_auth_enabled = True if "CLIENT_ID" in os.environ and os.environ["CLIENT_ID"] != "" else False
+    return dict(github_auth_enabled=github_auth_enabled)
+        
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    github_id = db.Column(db.Integer, unique=True, nullable=False, index=True)
-    access_token = db.Column(db.String(63), unique=True, nullable=False)
+    username = db.Column(db.String(39), unique=True,nullable=False,index=True)
+    password = db.Column(db.String, unique=False,nullable=True)
+    github_id = db.Column(db.Integer, unique=True, nullable=True, index=True)
+    access_token = db.Column(db.String(63), unique=True, nullable=True)
 
     def __repr__(self):
-        return '<User id:' + str(self.id) + ' name: ' + self.name + '>'
+        return '<User id:' + str(self.id) + ' name: ' + self.username + '>'
 
 
 class Url(db.Model):
@@ -74,6 +82,51 @@ def login():
         return redirect(url_for("urls"))
     else:
         return redirect(f"https://github.com/login/oauth/authorize?scope=&client_id={os.getenv('CLIENT_ID')}")
+
+@app.route("/users/register", methods=["GET", "POST"])
+def users_register():
+    if request.method == "GET":
+        return render_template("users_register.html")
+    else:
+        errors = False
+        if len(request.form['username']) == 0:
+            flash("username must not be empty", category="danger")
+            errors = True
+        if len(request.form['password']) < 8:
+            flash("passwords must be 8 characters or more", category="danger")
+            errors = True
+        if errors:
+            return render_template("users_register.html")
+        user = db.session.query(User).filter(User.username == request.form['username']).first()
+        if user:
+            flash("That username is already taken", category="danger")
+            return render_template("users_register.html")
+        else:
+            password = sha256_crypt.hash(request.form['password'])
+            user = User(username=request.form['username'],password=password)
+            db.session.add(user)
+            db.session.commit()
+            session["user"] = user.id
+            return redirect(url_for("urls"))
+
+
+@app.route("/users/login", methods=["GET", "POST"])
+def users_login():
+    if request.method == "GET":
+        return render_template("users_login.html")
+    else:
+        print(request.form['username'])
+        print(request.form['password'])
+        password = sha256_crypt.hash(request.form['password'])
+        print(password)
+        user = db.session.query(User).filter(User.username == request.form["username"]).first()
+        print("Verifying: %s", user)
+        if user and sha256_crypt.verify(request.form['password'], user.password):
+            session["user"] = user.id
+            return redirect(url_for("urls"))
+        else:
+            flash("The username or password you entered is incorrect", category="danger")
+            return render_template("users_login.html")
 
 
 @app.route("/logout")
